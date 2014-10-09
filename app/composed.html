@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <script src="./httpinvoke.js"></script>
+        <script src="./app.js"></script>
+    
+    </head>
+    <body>
+        <form action="/groups" method="PATCH">
+            <h1>Update groups for</h1>
+            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
+            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
+            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+
+            <label><input type="checkbox" name="group" class="group-value" value="a"/>Group A</label>
+            <label><input type="checkbox" name="group" class="group-value" value="b"/>Group B</label>
+            <label><input type="checkbox" name="group" class="group-value" value="c"/>Group C</label>
+            <button type="submit">Apply Groups To Asset</button>
+        </form>
+        <form action="/rename" method="PATCH">
+            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
+            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
+            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+            <input type="text" name="name" class="name-value"/>
+            <button type="submit">Rename Asset</button>
+        </form>
+        <section class="app">
+            <article class="asset-1">
+                <h1>Asset A</h1>
+                <dl>
+                    <dt>Name</dt>
+                    <dd class="name"></dd>
+                    <dt>Groups</dt>
+                    <dd class="groups"></dd>
+                </dl>
+            </article>
+            <article class="asset-2">
+                <h1>Asset B</h1>
+                <dl>
+                    <dt>Name</dt>
+                    <dd class="name"></dd>
+                    <dt>Groups</dt>
+                    <dd class="groups"></dd>
+                </dl>
+            </article>
+            <article class="asset-3">
+                <h1>Asset C</h1>
+                <dl>
+                    <dt>Name</dt>
+                    <dd class="name"></dd>
+                    <dt>Groups</dt>
+                    <dd class="groups"></dd>
+                </dl>
+            </article>
+        </section>
+        
+        <script>
+            var app = App.start()
+            
+        </script>
+    </body>
+</html>

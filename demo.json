@@ -1,0 +1,15 @@
+{
+    "apps": [{
+        "name":"api-server"
+        ,"script":"./index.js"
+        ,"ignoreWatch":[
+            "node_modules"
+            ,"demo"
+            ,"build"
+        ]
+        ,"env":{
+            "ENVIRONMENT":"dev"
+        }
+    }
+    ]
+}
