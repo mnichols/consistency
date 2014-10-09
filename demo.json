@@ -2,6 +2,7 @@
     "apps": [{
         "name":"api-server"
         ,"script":"./index.js"
+        ,"watch":["index.js"]
         ,"ignoreWatch":[
             "node_modules"
             ,"demo"

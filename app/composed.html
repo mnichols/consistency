@@ -1,57 +1,118 @@
 <html>
     <head>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+        <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
         <script src="./httpinvoke.js"></script>
         <script src="./app.js"></script>
     
-    </head>
-    <body>
-        <form action="/groups" method="PATCH">
-            <h1>Update groups for</h1>
-            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
-            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
-            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+        <style type="text/css">
+            section {
+                display: flex;
+                flex-direction: row;
+                flex: 1;
+            }
+            article {
+                flex: 1;
+                padding: 20px;
+            }
+            article.asset-1 {
+                background-color : #cc0;
+            }
+            article.asset-2 {
+                background-color : #0cc;
+            }
+            article.asset-3 {
+                background-color : #ccc;
+            }
 
-            <label><input type="checkbox" name="group" class="group-value" value="a"/>Group A</label>
-            <label><input type="checkbox" name="group" class="group-value" value="b"/>Group B</label>
-            <label><input type="checkbox" name="group" class="group-value" value="c"/>Group C</label>
-            <button type="submit">Apply Groups To Asset</button>
-        </form>
-        <form action="/rename" method="PATCH">
-            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
-            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
-            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
-            <input type="text" name="name" class="name-value"/>
-            <button type="submit">Rename Asset</button>
-        </form>
-        <section class="app">
-            <article class="asset-1">
-                <h1>Asset A</h1>
-                <dl>
-                    <dt>Name</dt>
-                    <dd class="name"></dd>
-                    <dt>Groups</dt>
-                    <dd class="groups"></dd>
-                </dl>
-            </article>
-            <article class="asset-2">
-                <h1>Asset B</h1>
-                <dl>
-                    <dt>Name</dt>
-                    <dd class="name"></dd>
-                    <dt>Groups</dt>
-                    <dd class="groups"></dd>
-                </dl>
-            </article>
-            <article class="asset-3">
-                <h1>Asset C</h1>
-                <dl>
-                    <dt>Name</dt>
-                    <dd class="name"></dd>
-                    <dt>Groups</dt>
-                    <dd class="groups"></dd>
-                </dl>
-            </article>
-        </section>
+            button {
+                display: block;
+            }
+
+            form {
+                flex: 1;
+                margin: 25px;
+            }
+            input[type="text"] {
+                display: block;
+                margin: 5px;
+            }
+            label {
+                padding: 5px;
+            }
+            .app {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .forms {
+                display: flex;
+                flex-direction: row;
+            }
+            
+        </style>
+    </head>
+
+    <body>
+        <div class="app">
+            <div class="forms">
+                <form class="groups-form" action="/groups" method="PATCH">
+                    <legend>Update groups</legend>
+                    <fieldset>
+                        <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
+                        <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
+                        <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+                    </fieldset>
+                    <fieldset>
+                        <label><input type="checkbox" name="group" class="group-value" value="a"/>Group A</label>
+                        <label><input type="checkbox" name="group" class="group-value" value="b"/>Group B</label>
+                        <label><input type="checkbox" name="group" class="group-value" value="c"/>Group C</label>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary">Apply Groups To Asset</button>
+                </form>
+                <form class="names-form" action="/rename" method="PATCH">
+                    <legend>Update Names</legend>
+                    <fieldset>
+                        <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
+                        <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
+                        <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+                    </fieldset>
+
+                    <label>New Name</label>
+                    <input type="text" name="name" class="name-value"/>
+                    <button type="submit" class="btn btn-primary">Rename Asset</button>
+                </form>
+            </div>
+            <section>
+                <article class="asset-1">
+                    <h1>Asset A</h1>
+                    <dl>
+                        <dt>Name</dt>
+                        <dd class="name"></dd>
+                        <dt>Groups</dt>
+                        <dd class="groups"></dd>
+                    </dl>
+                </article>
+                <article class="asset-2">
+                    <h1>Asset B</h1>
+                    <dl>
+                        <dt>Name</dt>
+                        <dd class="name"></dd>
+                        <dt>Groups</dt>
+                        <dd class="groups"></dd>
+                    </dl>
+                </article>
+                <article class="asset-3">
+                    <h1>Asset C</h1>
+                    <dl>
+                        <dt>Name</dt>
+                        <dd class="name"></dd>
+                        <dt>Groups</dt>
+                        <dd class="groups"></dd>
+                    </dl>
+                </article>
+            </section>
+        </div>
         
         <script>
             var app = App.start()

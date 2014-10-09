@@ -18,18 +18,18 @@ var server = new Hapi.Server('localhost', 3200, opts)
 function Asset(id,name, groups) {
     this.id = id
     this.name = name
-    this.groups = groups
+    this.groups = groups || []
 }
 Asset.prototype.rename = function(name) {
     this.name = name
 }
-Asset.prototype.groups = function(groups) {
-    this.groups = groups
+Asset.prototype.regroup = function(groups) {
+    this.groups = [].concat(groups)
 }
 
 var assets = {}
 for(var i = 0; i < 3 ; i++) {
-    var ass = new Asset(i + 1,'asset' + i,[])
+    var ass = new Asset(i + 1,'asset' + (i + 1),[])
     assets[ass.id] = ass
 }
 
@@ -48,6 +48,7 @@ server.route({
     method: 'GET',
     path: '/assets',
     handler: function (request, reply) {
+        console.log('assets',assets)
         return reply({
             assets: assets
         })
@@ -57,12 +58,23 @@ server.route({
     method: 'PATCH'
     ,path: '/groups'
     ,handler: function(request, reply) {
-        var asset = assets[request.payload['asset-key']]
-        asset.groups(request.payload['group'])
-        console.log('mypayload',request.payload)
-
+        var asset = assets[request.payload['asset-id']]
+        asset.regroup(request.payload['group'])
+        reply('OK')
     }
 })
+
+server.route({
+    method: 'PATCH'
+    ,path: '/names'
+    ,handler: function(request,reply) {
+        var asset = assets[request.payload['asset-id']]
+        asset.rename(request.payload.name)
+        reply('OK')
+    }
+})
+
+
 
 // Start the server
 server.start();
