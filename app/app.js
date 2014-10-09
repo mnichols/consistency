@@ -1,5 +1,6 @@
 var App = (function(){
 
+    var socket
     function noop(){}
 
     function ping(cb) {
@@ -22,7 +23,6 @@ var App = (function(){
         var groups = el.querySelector('.groups').innerHTML= (asset.groups || []).join(',')
     }
     function assignValues(assets) {
-        console.log('assets',assets)
         for(var k in assets) {
             var ass = assets[k]
             assignAssetValue(ass)
@@ -34,20 +34,23 @@ var App = (function(){
             return assignValues(data.assets)
         })
     }
+
+    function connectToNotifications() {
+        socket = io.connect('http://localhost:3200')
+        socket.on('currentTime',function(e){
+            var time = document.querySelector('.notifications .current-time')
+            time.innerHTML = e.message
+        })
+
+    }
+
+    //forms
     function bindForms() {
         var groupsForm = document.querySelector('.groups-form')
         var namesForm = document.querySelector('.names-form')
         groupsForm.addEventListener('submit',patchGroups)
         namesForm.addEventListener('submit',patchNames)
     }
-    function start(){
-        console.log('starting app')
-        ping()
-        loadAssets()
-        bindForms()
-    }
-
-
     function patchGroups(e){
         var form = this
         e.preventDefault()
@@ -68,6 +71,15 @@ var App = (function(){
             loadAssets()
         })
     }
+
+    function start(){
+        console.log('starting app')
+        ping()
+        connectToNotifications()
+        loadAssets()
+        bindForms()
+    }
+
 
     return {
         start: start

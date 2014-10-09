@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/mnichols/consistency",
   "dependencies": {
-    "hapi": "^6.11.1"
+    "hapi": "^6.11.1",
+    "socket.io": "^1.1.0"
   },
   "devDependencies": {
     "pm2": "^0.10.8"

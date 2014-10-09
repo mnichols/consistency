@@ -1,7 +1,7 @@
 <html>
     <head>
         <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-        <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://localhost:3200/socket.io/socket.io.js"></script>
         <script src="./httpinvoke.js"></script>
         <script src="./app.js"></script>
     
@@ -49,12 +49,24 @@
                 display: flex;
                 flex-direction: row;
             }
+            .notifications {
+                background-color: #303030;
+                color: #fff;
+                flex: 0 0 20px;
+            }
+            .current-time: {
+                border: solid blue 2px;
+                color: #ff0000;
+            }
             
         </style>
     </head>
 
     <body>
         <div class="app">
+            <div class="notifications">
+                <p>Current Server Time <span class="current-time"></span></p>
+            </div>
             <div class="forms">
                 <form class="groups-form" action="/groups" method="PATCH">
                     <legend>Update groups</legend>
@@ -86,7 +98,7 @@
             <section>
                 <article class="asset-1">
                     <h1>Asset A</h1>
-                    <dl>
+                    <dl class="dl-horizontal">
                         <dt>Name</dt>
                         <dd class="name"></dd>
                         <dt>Groups</dt>
@@ -95,7 +107,7 @@
                 </article>
                 <article class="asset-2">
                     <h1>Asset B</h1>
-                    <dl>
+                    <dl class="dl-horizontal">
                         <dt>Name</dt>
                         <dd class="name"></dd>
                         <dt>Groups</dt>
@@ -104,7 +116,7 @@
                 </article>
                 <article class="asset-3">
                     <h1>Asset C</h1>
-                    <dl>
+                    <dl class="dl-horizontal">
                         <dt>Name</dt>
                         <dd class="name"></dd>
                         <dt>Groups</dt>

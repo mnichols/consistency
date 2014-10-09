@@ -14,6 +14,8 @@ var opts = {
 }
 
 var server = new Hapi.Server('localhost', 3200, opts)
+    ,io = require('socket.io')(server.listener)
+
 
 function Asset(id,name, groups) {
     this.id = id
@@ -33,6 +35,8 @@ for(var i = 0; i < 3 ; i++) {
     assets[ass.id] = ass
 }
 
+//routes
+
 server.route({
     method: 'GET'
     ,path: '/ping'
@@ -43,7 +47,6 @@ server.route({
     }
 })
 
-// Add the route
 server.route({
     method: 'GET',
     path: '/assets',
@@ -74,7 +77,17 @@ server.route({
     }
 })
 
+var ioHandler = function(socket) {
+    setInterval(function(){
+        socket.emit('currentTime',{
+            message: new Date().toString()
+        })
 
+    },1000)
+}
+io.on('connection',ioHandler)
 
 // Start the server
 server.start();
+
+
