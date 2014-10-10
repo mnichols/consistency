@@ -10,4 +10,8 @@ serve:
 stop: node_modules
 	./node_modules/.bin/pm2 kill
 
-.PHONY: demo
+logs:
+	./node_modules/.bin/pm2 logs
+
+.PHONY: demo serve stop logs
+

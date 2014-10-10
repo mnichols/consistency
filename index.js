@@ -1,39 +1,71 @@
-var Hapi = require('hapi');
+var Hapi = require('hapi')
+    ,PORT = process.env.PORT || 3200
+    ,proxy = require('./proxy')
+
+
 
 // Create a server with a host and port
 var opts = {
     cors: {
-        exposedHeaders: [
+        additionalHeaders: [
             'Accept-Ranges'
             , 'Content-Encoding'
             , 'Content-Length'
             , 'Content-Range'
             ,'Content-Encoding'
+            ,'Cache-Control'
+            ,'Expires'
+            ,'ETag'
+        ]
+        ,additionalExposedHeaders: [
+            'Accept-Ranges'
+            , 'Content-Encoding'
+            , 'Content-Length'
+            , 'Content-Range'
+            ,'Content-Encoding'
+            ,'Cache-Control'
+            ,'Expires'
+            ,'ETag'
         ]
     }
 }
 
-var server = new Hapi.Server('localhost', 3200, opts)
+var server = new Hapi.Server('localhost', PORT, opts)
     ,io = require('socket.io')(server.listener)
 
 
-function Asset(id,name, groups) {
+function AssetDescription(id,name, groups) {
     this.id = id
     this.name = name
     this.groups = groups || []
 }
-Asset.prototype.rename = function(name) {
+AssetDescription.prototype.rename = function(name) {
     this.name = name
 }
-Asset.prototype.regroup = function(groups) {
+AssetDescription.prototype.regroup = function(groups) {
     this.groups = [].concat(groups)
 }
 
-var assets = {}
-for(var i = 0; i < 3 ; i++) {
-    var ass = new Asset(i + 1,'asset' + (i + 1),[])
-    assets[ass.id] = ass
+function AssetsCatalog(id) {
+    this.assets = {}
+    for(var i = 0; i < 3 ; i++) {
+        var ass = new AssetDescription(i + 1,'asset' + (i + 1),[])
+        this.assets[ass.id] = ass
+    }
 }
+AssetsCatalog.prototype.findById = function(id) {
+    return this.assets[id]
+}
+AssetsCatalog.prototype.rename = function(id, name) {
+    var asset = this.findById(id)
+    asset.rename(name)
+}
+AssetsCatalog.prototype.regroup = function(id, groups) {
+    var asset = this.findById(id)
+    asset.regroup(groups)
+}
+
+var assets = new AssetsCatalog()
 
 //routes
 
@@ -49,31 +81,27 @@ server.route({
 
 server.route({
     method: 'GET',
-    path: '/assets',
+    path: '/assets-catalog',
     handler: function (request, reply) {
         console.log('assets',assets)
-        return reply({
-            assets: assets
-        })
+        return reply(assets)
+            .header('Cache-Control','max-age=30') //30 second cache
     }
 });
 server.route({
     method: 'PATCH'
-    ,path: '/groups'
+    ,path: '/assets-catalog'
     ,handler: function(request, reply) {
-        var asset = assets[request.payload['asset-id']]
-        asset.regroup(request.payload['group'])
-        reply('OK')
-    }
-})
-
-server.route({
-    method: 'PATCH'
-    ,path: '/names'
-    ,handler: function(request,reply) {
-        var asset = assets[request.payload['asset-id']]
-        asset.rename(request.payload.name)
-        reply('OK')
+        var id = request.payload['asset-id']
+        var name = request.payload['name']
+        var groups = request.payload['group']
+        if(groups) {
+            assets.regroup(id,groups)
+        }
+        if(name) {
+            assets.rename(id, name)
+        }
+        return reply('OK')
     }
 })
 
@@ -88,6 +116,9 @@ var ioHandler = function(socket) {
 io.on('connection',ioHandler)
 
 // Start the server
-server.start();
+server.start(function(){
+});
+
+
 
 

@@ -19,6 +19,18 @@ eventual consistency and avoid the perception of data integrity failure (UX).
 The discussion here deals with public caches. Private caches provide more flexibility, though perhaps with 
 more work, than the concerns here.
 
+## Types of Caching and Their Benefits
+
+The _best_ caching strategy is the one where a request is not made. That means:
+
+* Thoughtful response headers for setting expiration and max-age depending on the resource
+* Considering cache expiration when composing resources...catalogs can help here.
+
+Revalidation of a resource via the `etag` doesn't save roundtrips. If the process that
+validates the current etag with the one in the cache is not much faster than generating
+the resource then the `304 Not Modified` win is negligible.
+
+
 ## Architecture
 
 ### Goals
@@ -50,6 +62,13 @@ really just a reporting tool across immutable data.
 
 The volatile api objects could be teased out of the immutable bits so that we can
 never expire while limiting the expiry of mutable objects.
+
+For example, we expose operation that 'names' an asset. But a large part of interesting
+asset data is less-volatile since it arrives as part of a large data dump. Expiration
+caching can help us here is we tease out the 'name' attribute from the 'asset' resource
+and place it inside of a catalog that has a shorter Expiration date (perhaps `0`).
+The 'asset' resource can receive a much longer expiration date since the data there isn't as volatile.
+The end result is clients _not_ making round trips to resources that are infrequently updated.
 
 Since our users work within a coarse `organization` context, it is reasonable to 
 revision our resources at the organization level. State changes impacting assets would

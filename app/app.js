@@ -1,6 +1,7 @@
 var App = (function(){
 
     var socket
+        ,NOTIFICATIONS_PORT = 3200
     function noop(){}
 
     function ping(cb) {
@@ -29,10 +30,19 @@ var App = (function(){
         }
     }
     function loadAssets() {
-        httpinvoke('http://localhost:3200/assets','GET',function(err,body,statusCode){
-            var data = JSON.parse(body)
-            return assignValues(data.assets)
-        })
+        var opts = {
+            headers: {
+                'Cache-Control':'max-age=7200'
+            }
+            ,corsExposedHeaders: ['Cache-Control','Expires','ETag']
+        }
+        return httpinvoke('http://localhost:3200/assets-catalog'
+            ,'GET'
+            ,opts
+            ,function(err,body,statusCode){
+                var data = JSON.parse(body)
+                return assignValues(data.assets)
+            })
     }
 
     function connectToNotifications() {
@@ -54,21 +64,19 @@ var App = (function(){
     function patchGroups(e){
         var form = this
         e.preventDefault()
-        httpinvoke('http://localhost:3200/groups','PATCH',{
+        httpinvoke('http://localhost:3200/assets-catalog','PATCH',{
             input: new FormData(this)
         },function(err) {
             form.reset()
-            loadAssets()
         })
     }
     function patchNames(e) {
         var form = this
         e.preventDefault()
-        httpinvoke('http://localhost:3200/names','PATCH',{
+        httpinvoke('http://localhost:3200/assets-catalog','PATCH',{
             input: new FormData(this)
         },function(err) {
             form.reset()
-            loadAssets()
         })
     }
 
