@@ -1,6 +1,6 @@
 server {  
   server_name your.domain.com;
-  listen 8080;
+  listen 8000;
 
   location / {
     proxy_set_header X-Real-IP $remote_addr;
