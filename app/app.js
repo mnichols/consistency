@@ -1,12 +1,17 @@
 var App = (function(){
 
     var socket
-        ,NOTIFICATIONS_PORT = 3200
+        ,NOTIFICATIONS_PORT = 3999
+        ,API_ENDPOINT = 'http://localhost:8000'
+
+    function url(path) {
+        return API_ENDPOINT + path
+    }
     function noop(){}
 
     function ping(cb) {
         cb = (cb || noop)
-        httpinvoke('http://localhost:3200/ping','GET',{
+        httpinvoke(url('/ping'),'GET',{
         },function(err,body,statusCode,headers){
             if(err) {
                 console.error(err)
@@ -36,7 +41,7 @@ var App = (function(){
             }
             ,corsExposedHeaders: ['Cache-Control','Expires','ETag']
         }
-        return httpinvoke('http://localhost:3200/assets-catalog'
+        return httpinvoke(url('/assets-catalog')
             ,'GET'
             ,opts
             ,function(err,body,statusCode){
@@ -46,7 +51,7 @@ var App = (function(){
     }
 
     function connectToNotifications() {
-        socket = io.connect('http://localhost:3200')
+        socket = io.connect('http://localhost:3999')
         socket.on('currentTime',function(e){
             var time = document.querySelector('.notifications .current-time')
             time.innerHTML = e.message
@@ -64,7 +69,7 @@ var App = (function(){
     function patchGroups(e){
         var form = this
         e.preventDefault()
-        httpinvoke('http://localhost:3200/assets-catalog','PATCH',{
+        httpinvoke(url('/assets-catalog'),'PATCH',{
             input: new FormData(this)
         },function(err) {
             form.reset()
@@ -73,7 +78,7 @@ var App = (function(){
     function patchNames(e) {
         var form = this
         e.preventDefault()
-        httpinvoke('http://localhost:3200/assets-catalog','PATCH',{
+        httpinvoke(url('/assets-catalog'),'PATCH',{
             input: new FormData(this)
         },function(err) {
             form.reset()
