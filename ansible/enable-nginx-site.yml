@@ -1,0 +1,11 @@
+---
+- name: '{{site}}: copy nginx config'
+  copy: src='{{site}}/nginx-config' dest='/etc/nginx/sites-available/{{site}}'
+  notify: reload nginx
+ 
+- name: '{{site}}: make sure nginx sites-enabled directory exists'
+  file: state=directory path=/etc/nginx/sites-enabled
+ 
+- name: '{{site}}: enable nginx site'
+  file: state=link force=yes src=/etc/nginx/sites-available/{{site}} dest=/etc/nginx/sites-enabled/{{site}}
+  notify: reload nginx

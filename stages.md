@@ -1,3 +1,8 @@
+# Caching overview
+
+[Caching isn't an optimization step](http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm#fig_5_4). 
+It is a [constraint](http://wwatson.me/2011/10/13/rest-constraints-part-5/) for RESTful compliance.
+
 There are two primary http caching types, expiration caching and validation caching. 
 
 **Expiration caching** (eg `max-age`) off-loads burden to the _browser_. Therefore, it improves performance because there is no 
@@ -15,7 +20,6 @@ Each has varying _consistency_ implications that need to be reconciled with at l
     * All performance problems are first due to http roundtrips, and secondly by server-side responsiveness.
 * scalability : varying caching requirements can expose various contexts for resources which can helps us scale the app horizontally. 
     * Models are no longer monolithic, but instead composable.
-
 
 Varying caching approaches are detailed below, considering their implementation and consistency implications:
 
@@ -35,13 +39,13 @@ This tells the browser to cache the response for one year (in _seconds_).
 
 > What about consistency?
 
-### Static Assets
+#### Static Assets
 
 Static assets like `.js`,`.css` files, we can simply revision the folder and drop the assets in there.
 Subsequent updates to the `index.html` will reference the new revision of the assets.
 The `index.html` is, of course, not `no-cache` in this scenario.
 
-### Dynamic Assets (eg api)
+#### Dynamic Assets (eg api)
 
 Dynamic assets can embed a logical revision number in their uri. 
 This revision can be on a logical boundary, like a user's organization, and is updated on any state changes
@@ -58,8 +62,10 @@ in such a way this could be very valuable.
 
 ## Revisioned / Validatable (Etags)
 
+#### Dynamic Assets (eg api)
+
 Instead of burdening clients with caching, this approach places burden for caching entity bodies onto an http cache (eg nginx).
-This _can_ improve performance because it reduces server-side resource consumption but IT STILL REQUIRES AN HTTP ROUNDTRIP, which is
+This _can_ improve performance because it reduces server-side resource consumption but **IT STILL REQUIRES AN HTTP ROUNDTRIP**, which is
 really the bottleneck in client applications.
 
 The `max-age` expiration header is low enough so that clients must _revalidate_ their resources each time.
@@ -73,17 +79,18 @@ Subsequent requests by the client will include this request header:
 
     If-None-Match: "686897696a7c876b7e"
 
+> What about consistency?
+
 The proxy server will ask the application if the ETag represents the current revision, expecting either a `304 Not Modified` (thereby returning the 
 body from its cache), or a `200 OK` to update the cache with the fresh resource as appropriate.
 
-CAUTION:
-
-Care must be taken to determine how this ETag is stamped considering server clusters. Server identity must not be embedded in the construction of this revision value.
+**CAUTION:** Care must be taken to determine how this ETag is stamped considering server clusters. 
+Server identity must not be embedded in the construction of this revision value.
 
 
 ## Validation (Etags) + Immutable
 
-### Dynamic Assets (eg api)
+#### Dynamic Assets (eg api)
 
 Varying resource attribute volatilities can (_should_) demand a reworking of resource organization. 
 Instead of conceiving of models monolithically, one can tease out the longer-lived data from the more dynamic and will likely

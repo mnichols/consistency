@@ -1,14 +1,24 @@
 ---
 - hosts: all
-  sudo: True
-  sudo_user: root
+  user: vagrant
+  # sudo: True
+  # sudo_user: root
+  roles:
+    - nginx
+    - nodejs
   tasks: 
-    - name: Installs nginx web server
+    - name: installs nginx web server
       apt: pkg=nginx state=installed update_cache=true
-      notify:
-        - start nginx
+
+    # yeah this is overkill until you start to add services
+    - name: start daemons
+      service: name={{item}} state=started
+      with_items: [nginx]
+
+    - include: enable-nginx-site.yml site=consistency
 
   handlers:
-    - name: start nginx
-      service: name=nginx state=started
+
+    - name: reload nginx
+      service: name=nginx state=reloaded
   
