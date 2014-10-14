@@ -1,8 +1,8 @@
 var App = (function(){
 
     var socket
-        ,NOTIFICATIONS_PORT = 3999
-        ,API_ENDPOINT = 'http://localhost:8000'
+        ,API_ENDPOINT = 'http://localhost:8000/api/'
+        ,NOTIFICATIONS_ENDPOINT = 'http://localhost:8001/'
 
     function url(path) {
         return API_ENDPOINT + path
@@ -51,7 +51,7 @@ var App = (function(){
     }
 
     function connectToNotifications() {
-        socket = io.connect('http://localhost:3999')
+        socket = io.connect(NOTIFICATIONS_ENDPOINT)
         socket.on('currentTime',function(e){
             var time = document.querySelector('.notifications .current-time')
             time.innerHTML = e.message

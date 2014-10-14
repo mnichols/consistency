@@ -22,6 +22,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Nginx configured port for this site is at port 8000
   config.vm.network :forwarded_port, guest: 8000, host: 8000
+  # Nginx notifications (sockets) configured port for this site is at port 8000
+  config.vm.network :forwarded_port, guest: 8001, host: 8001
 
   # ansible
   config.vm.provision "ansible" do |ansible|
