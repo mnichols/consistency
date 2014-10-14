@@ -1,15 +1,20 @@
 ---
-- name: Node.js | Package prerequisites for node.js
-  apt: pkg=python-software-properties state=present
-  sudo: yes
+- name: Node.js | Make sure CuRL is present
+  sudo: True
+  apt: name=curl state=present
   tags: nodejs
 
-- name: Node.js | Add the Node.js PPA
-  apt_repository: repo='ppa:chris-lea/node.js' state=present
-  sudo: yes
+- name: Node.js | Download nave tool for node.js
+  sudo: True
+  get_url: url=https://raw.githubusercontent.com/isaacs/nave/master/nave.sh dest=/usr/local/bin/nave
   tags: nodejs
 
-- name: Node.js | Install Node.js and npm
-  apt: pkg=nodejs update-cache=yes
-  sudo: yes
+- name: Node.js | Set nave permissions to execute
+  sudo: True
+  file: path=/usr/local/bin/nave state=touch mode="777"
+  tags: nodejs
+
+- name: Node.js | Use stable nodejs
+  command: nave usemain stable
+  sudo: True
   tags: nodejs
