@@ -1,13 +1,23 @@
 There are two primary http caching types, expiration caching and validation caching. 
-Expiration caching (eg `max-age`) off-loads burden to the _browser_. Therefore, it improves performance because there is no 
+
+**Expiration caching** (eg `max-age`) off-loads burden to the _browser_. Therefore, it improves performance because there is no 
 http roundtrip.
-Validation caching (eg `etag`) off-loads burden to the http cache (eg 'nginx'). It _can_ improve performance if the server provides
+
+**Validation caching** (eg `etag`) off-loads burden to the http cache (eg 'nginx'). It _can_ improve performance if the server provides
 a lightweight identity validation approach, but it _does_ require an http roundtrip. This can also save significant _bandwidth_ costs (no body) and
 save resource consumption costs too (eg no database calls needed).
 
-Each has varying _consistency_ implications that need to be reconciled with cost, simplicity, performance, and scalability.
+Each has varying _consistency_ implications that need to be reconciled with at least:
 
-The stages of caching and consistency implications:
+* cost : _validation_ caching drastically saves resource consumption
+* simplicity : server-side burden increases with `ETag` stamping. Revisioning can increases this burden too.
+* performance : _expiration_ caching and, to a lesser degree, _validation_ caching pushes burden outside the application so clients appear more responsive.
+    * All performance problems are first due to http roundtrips, and secondly by server-side responsiveness.
+* scalability : varying caching requirements can expose various contexts for resources which can helps us scale the app horizontally. 
+    * Models are no longer monolithic, but instead composable.
+
+
+Varying caching approaches are detailed below, considering their implementation and consistency implications:
 
 ## Immutable (One Year)
 
