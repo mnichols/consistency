@@ -2,6 +2,8 @@
 
 # Official Nginx ppa for ubuntu-based distributions
 # http://nginx.org
+# The apt package for nginx is old (~1.1.9) and we want
+# to use web sockets which didn't get supported until v1.3
 #
 - name: Nginx | Remove old nginx
   sudo: yes

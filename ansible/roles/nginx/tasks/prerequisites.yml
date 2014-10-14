@@ -1,5 +1,7 @@
 ---
 
+# The package for nginx is old (~1.1.9) and we want
+# to use web sockets which didn't get supported until v1.3
 - name: Prerequisites for provisioning (pycurl)
   when: ansible_os_family == 'Debian'
   sudo: yes
