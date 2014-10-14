@@ -6,19 +6,3 @@
   roles:
     - nginx
     - nodejs
-  tasks: 
-    - name: installs nginx web server
-      apt: pkg=nginx state=installed update_cache=true
-
-    # yeah this is overkill until you start to add services
-    - name: start daemons
-      service: name={{item}} state=started
-      with_items: [nginx]
-
-    - include: enable-nginx-site.yml site=consistency
-
-  handlers:
-
-    - name: reload nginx
-      service: name=nginx state=reloaded
-  
