@@ -1,0 +1,7 @@
+---
+  - name: Common | Update server
+    apt: update_cache=yes
+    tags: common
+
+  - name: Common | Upgrades server
+    apt: upgrade=full

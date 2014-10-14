@@ -1,9 +1,8 @@
 ---
-- name: Nginx | Install nginx
-  sudo: yes
-  apt: pkg=nginx
-  tags: nginx
+- include: prerequisites.yml
+- include: install.yml
 
+# configure
 - name: Nginx | Setup reverse proxy
   sudo: yes
   template: src=default dest=/etc/nginx/sites-available/
@@ -12,4 +11,9 @@
 - name: Nginx | Start nginx
   sudo: yes
   service: name=nginx state=restarted
+  tags: nginx
+
+- name: Nginx | Startup on reboot
+  sudo: yes
+  service: name=nginx state=started enabled=yes
   tags: nginx

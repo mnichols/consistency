@@ -2,6 +2,7 @@ upstream api {
     server 127.0.0.1:3200;
 }
 
+
 server {  
   listen 8000;
 

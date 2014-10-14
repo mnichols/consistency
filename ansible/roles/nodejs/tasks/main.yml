@@ -1,7 +1,7 @@
 ---
 - name: Node.js | Make sure CuRL is present
   sudo: True
-  apt: name=curl state=present
+  apt: name=curl state=present update_cache=yes
   tags: nodejs
 
 - name: Node.js | Download nave tool for node.js

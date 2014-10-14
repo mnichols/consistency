@@ -1,0 +1,8 @@
+---
+
+- name: Prerequisites for provisioning (pycurl)
+  when: ansible_os_family == 'Debian'
+  sudo: yes
+  apt:
+    name: python-pycurl
+  tags: nginx
