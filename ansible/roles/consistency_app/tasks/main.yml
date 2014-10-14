@@ -1,0 +1,8 @@
+---
+  - name: Consistency | Stop The Things!
+    command: make stop chdir=/home/vagrant/app
+    tags: app
+
+  - name: Consistency | Start The Things!
+    command: make demo chdir=/home/vagrant/app
+    tags: app
