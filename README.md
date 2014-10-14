@@ -1,5 +1,5 @@
 consistency
 ===========
 
-[Caching](stages.md)
-[Notifications](notifications.md)
+* [Caching](stages.md)
+* [Notifications](notifications.md)
