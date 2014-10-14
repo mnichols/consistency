@@ -1,7 +1,6 @@
 var Hapi = require('hapi')
     ,PORT = process.env.PORT || 3200
     ,NOTIFICATIONS_PORT = process.env.NOTIFICATIONS_PORT || 4000
-    ,proxy = require('./proxy')
 
 
 
