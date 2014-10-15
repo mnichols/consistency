@@ -89,14 +89,21 @@ function immutable(){
                     .code(404)
             }
             return reply(assetsCat)
-                .header('Cache-Control','max-age=31536000') //one year cache
+                .header('cache-control','max-age=31536000') //one year cache
         }
     });
     server.route({
         method: 'PATCH'
         ,path: '/immutable/org/{revision}/assets-catalog'
         ,handler: function(request, reply) {
-            var assetsCat = getAssetsAt(request.params.revision)
+
+            if(parseInt(request.params.revision,10) !== revisions[0]) {
+                var err = Hapi.error.badRequest('Concurrency Error:Current revision is ' + revisions[0])
+                err.output.statusCode = 400
+                err.reformat()
+                return reply(err)
+            }
+            var assetsCat = getAssetsAt(parseInt(request.params.revision,10))
             var id = request.payload['asset-id']
             var name = request.payload['name']
             var groups = request.payload['group']

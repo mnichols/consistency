@@ -98,11 +98,25 @@ State changes to the app cause an update to the revision of the organization.
 * **Expiration** caching is set to `max-age={oneyear}`
 * **Validation** caching is not needed (eg `etag`)
 
+### Consistency
+
+When the client receives a `revisionChanged` event, the user may choose to 'Update Revision' or just stay with the older revisions.
+NOTE: On the server, requesting older revisions could be done with a &lt;=`{revision}` or something other check to see if the resource can be found 
+matching the requests `revision` parameter.
+
 ### Side effects
 
 * Server caching is dead simple
 * Clients can move forward and backward through revisions of the app
-* Clients are in control of upgrading when notified of state changes
+* Concurrency is simple. Try to rename an asset without syncing your revision...you get a 400 with a concurrency error.
+* Clients are in control of upgrading when notified of state changes. If the client is knowingly presenting stale data, it can disable or remove forms that 
+will cause concurrency exceptions to be raised.
+
+### Actions to see this work
+
+1. Rename an asset and then 'Update Revision'. Repeat this a few times. Refresh the page and toggle through the revisions of the app. Note in dev tools that `assets-catalog`
+is being loaded `(from cache)` which means there is no round trip.
+2. Try renaming an asset while on a stale revision. Note the `400` concurrency exception which is returned.
 
 **Don't Forget to clear your browser cache!**
 
@@ -113,7 +127,7 @@ State changes to the app cause an update to the revision of the organization.
                 <div><label>Select Revision: <select class="revisions form-control"></select></label></div>
                 <form class="update bg-info">
                     <fieldset>
-                        <p>The current revision is <span class="current-revision"></span></p>
+                        <p>The current (server) revision is <span class="current-revision"></span></p>
                         <p>You are at revision <span class="stale-revision"></span></p>
                         <button type="submit" class="btn btn-success">Update Revision</button>
                     </fieldset>
@@ -122,9 +136,9 @@ State changes to the app cause an update to the revision of the organization.
                     <form class="groups-form" method="PATCH">
                         <legend>Update groups</legend>
                         <fieldset>
-                            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
-                            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
-                            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+                            <label><input type="radio" name="asset-id" value="1" required/>Asset 1</label>
+                            <label><input type="radio" name="asset-id" value="2" required/>Asset 2</label>
+                            <label><input type="radio" name="asset-id" value="3" required/>Asset 3</label>
                         </fieldset>
                         <fieldset>
                             <label><input type="checkbox" name="group" class="group-value" value="a"/>Group A</label>
@@ -136,9 +150,9 @@ State changes to the app cause an update to the revision of the organization.
                     <form class="names-form" method="PATCH">
                         <legend>Update Names</legend>
                         <fieldset>
-                            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
-                            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
-                            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+                            <label><input type="radio" name="asset-id" value="1" required/>Asset 1</label>
+                            <label><input type="radio" name="asset-id" value="2" required/>Asset 2</label>
+                            <label><input type="radio" name="asset-id" value="3" required/>Asset 3</label>
                         </fieldset>
 
                         <label>New Name</label>

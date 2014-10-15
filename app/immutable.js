@@ -31,31 +31,32 @@ var App = (function(){
         clientRevision = rev
         loadAssets(rev.revision)
         updateClientRevision(rev)
-        updateRevisionButton(rev)
+        updateRevisionButton()
     }
     //notification handlers
     function handleRevisionChange(e) {
-        console.log('#handleRevisionChange','revisionChanged',e)
-        //just reload the revs...we could avoid this tho by just doing it on client
-        loadRevisions(function(){
-            updateServerRevision(e)
-            updateRevisionButton(e)
-        })
+        console.log('#handleRevisionChange',e.event,e)
+        revisions.unshift(e)
+        updateServerRevision()
+        updateRevisionButton()
+        updateRevisionSelector()
     }
-    function updateServerRevision(e) {
+    function updateServerRevision() {
+        var latest = revisions[0]
         var form = document.querySelector('form.update')
-        form.querySelector('.current-revision').innerHTML = e.revision
+        form.querySelector('.current-revision').innerHTML = latest.revision
     }
 
-    function updateClientRevision(e) {
+    function updateClientRevision() {
         var form = document.querySelector('form.update')
-        form.querySelector('.stale-revision').innerHTML = e.revision
+        form.querySelector('.stale-revision').innerHTML = getClientRevision().revision
     }
-    function updateRevisionButton(e) {
+    function updateRevisionButton() {
         var form = document.querySelector('form.update')
             ,button = form.querySelector('button')
         var client = getClientRevision()
         var latest = revisions[0]
+        console.log('client',client.revision,'latest',latest.revision)
         if(client.revision === latest.revision) {
             form.classList.remove('bg-primary')
             form.classList.add('bg-info')
@@ -108,6 +109,7 @@ var App = (function(){
                 function(err, body, statusCode) {
                     var data = JSON.parse(body)
                     revisions = data.revisions
+                    clientRevision = revisions[0]
                     if(cb) {
                         return cb(err)
                     }
@@ -164,7 +166,6 @@ var App = (function(){
             ,rev = getClientRevision()
         e.preventDefault()
         var data = new FormData(this)
-        console.log('data',data)
         httpinvoke(url('/org/' + rev.revision + '/assets-catalog'),'PATCH',{
             input: data
             ,inputType: "formdata"
@@ -177,10 +178,12 @@ var App = (function(){
         e.preventDefault()
 
         var latest = revisions[0]
-        var clientRevision = latest
+        clientRevision = latest
+        console.log('reloading',latest)
         loadAssets(latest.revision)
-        handleRevisionChange(latest)
-        updateClientRevision(latest)
+        updateServerRevision()
+        updateClientRevision()
+        updateRevisionButton()
     }
 
     function compileMarkdown(){
@@ -202,9 +205,11 @@ var App = (function(){
             if(err) {
                 console.error(err)
             }
-            handleRevisionChange(getClientRevision())
-            loadAssets(getClientRevision().revision)
+            updateServerRevision()
+            updateClientRevision()
+            updateRevisionButton()
             updateRevisionSelector()
+            loadAssets(getClientRevision().revision)
         })
     }
 
