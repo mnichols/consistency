@@ -39,7 +39,6 @@ var App = (function(){
         //just reload the revs...we could avoid this tho by just doing it on client
         loadRevisions(function(){
             updateServerRevision(e)
-            updateClientRevision(e)
             updateRevisionButton(e)
         })
     }
@@ -177,10 +176,11 @@ var App = (function(){
     function reload(e) {
         e.preventDefault()
 
-        var clientRevision = undefined
         var latest = revisions[0]
+        var clientRevision = latest
         loadAssets(latest.revision)
         handleRevisionChange(latest)
+        updateClientRevision(latest)
     }
 
     function compileMarkdown(){
