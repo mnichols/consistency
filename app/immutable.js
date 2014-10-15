@@ -12,20 +12,52 @@ var App = (function(){
         details.classList.toggle('show')
         details.classList.toggle('hidden')
     }
+    function updateRevisionSelector() {
+
+        var revs = document.querySelector('select.revisions')
+        revs.removeEventListener('change',selectRevision)
+        revs.addEventListener('change',selectRevision)
+        for(var i = 0 ; i < revs.length; i ++) {
+            revs.remove(i)
+        }
+        revisions.forEach(function(rev){
+            var o = new Option(rev.revision,rev.revision)
+            revs.appendChild(o)
+        })
+    }
+    function selectRevision(e){
+        var revs = document.querySelector('select.revisions')
+        var rev = { revision: revs.value }
+        clientRevision = rev
+        loadAssets(rev.revision)
+        updateClientRevision(rev)
+        updateRevisionButton(rev)
+    }
     //notification handlers
     function handleRevisionChange(e) {
-        var client = getClientRevision()
+        console.log('#handleRevisionChange','revisionChanged',e)
+        //just reload the revs...we could avoid this tho by just doing it on client
+        loadRevisions(function(){
+            updateServerRevision(e)
+            updateClientRevision(e)
+            updateRevisionButton(e)
+        })
+    }
+    function updateServerRevision(e) {
+        var form = document.querySelector('form.update')
+        form.querySelector('.current-revision').innerHTML = e.revision
+    }
+
+    function updateClientRevision(e) {
+        var form = document.querySelector('form.update')
+        form.querySelector('.stale-revision').innerHTML = e.revision
+    }
+    function updateRevisionButton(e) {
         var form = document.querySelector('form.update')
             ,button = form.querySelector('button')
-        if(e) {
-            console.log('NOTIFICATION','revisionChanged',e)
-            revisions.unshift(e)
-        }
-        e = e || client
-        form.querySelector('.current-revision').innerHTML = e.revision
-        form.querySelector('.stale-revision').innerHTML = client.revision
-
-        if(client.revision === e.revision) {
+        var client = getClientRevision()
+        var latest = revisions[0]
+        if(client.revision === latest.revision) {
             form.classList.remove('bg-primary')
             form.classList.add('bg-info')
             return button.setAttribute('disabled','')
@@ -144,9 +176,11 @@ var App = (function(){
 
     function reload(e) {
         e.preventDefault()
-        var lastKnown = getClientRevision()
-        loadAssets(lastKnown.revision)
-        handleRevisionChange(lastKnown)
+
+        var clientRevision = undefined
+        var latest = revisions[0]
+        loadAssets(latest.revision)
+        handleRevisionChange(latest)
     }
 
     function compileMarkdown(){
@@ -170,6 +204,7 @@ var App = (function(){
             }
             handleRevisionChange(getClientRevision())
             loadAssets(getClientRevision().revision)
+            updateRevisionSelector()
         })
     }
 
