@@ -3,6 +3,7 @@ var App = (function(){
     var socket
         ,API_ENDPOINT = 'http://localhost:8000/api/'
         ,NOTIFICATIONS_ENDPOINT = 'http://localhost:8001/'
+    ;
 
     function url(path) {
         return API_ENDPOINT + path
@@ -20,8 +21,8 @@ var App = (function(){
             console.log('ping',body)
             return cb()
         })
-
     }
+
 
     function assignAssetValue(asset) {
         var el = document.querySelector('.asset-' + asset.id)
@@ -35,16 +36,8 @@ var App = (function(){
         }
     }
     function loadAssets() {
-        var opts = {
-            headers: {
-                'Cache-Control':'max-age=7200'
-            }
-            ,corsExposedHeaders: ['Cache-Control','Expires','ETag']
-        }
-        return httpinvoke(url('/assets-catalog')
-            ,'GET'
-            ,opts
-            ,function(err,body,statusCode){
+        return httpinvoke(url('/assets-catalog'),'GET',
+            function(err,body,statusCode){
                 var data = JSON.parse(body)
                 return assignValues(data.assets)
             })
