@@ -8,6 +8,8 @@ server {
 
   location / {
     root /home/vagrant/app/app;
+    # turn etag on/off for static resources (on by default)
+    etag on;
   }
 
   location /api {

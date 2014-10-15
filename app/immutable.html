@@ -1,0 +1,183 @@
+<html>
+    <head>
+        <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+        <script src="http://localhost:8001/socket.io/socket.io.js"></script>
+        <script src="./httpinvoke.js"></script>
+        <script src="marked.min.js"></script>
+        <script src="./immutable.js"></script>
+    
+        <style type="text/css">
+            section {
+                display: flex;
+                flex-direction: row;
+                flex: 1;
+            }
+            article {
+                flex: 1;
+                padding: 20px;
+            }
+            article.asset-1 {
+                background-color : #cc0;
+            }
+            article.asset-2 {
+                background-color : #0cc;
+            }
+            article.asset-3 {
+                background-color : #ccc;
+            }
+
+            button {
+                display: block;
+            }
+
+            form {
+                flex: 1;
+                margin: 25px;
+            }
+            input[type="text"] {
+                display: block;
+                margin: 5px;
+            }
+            label {
+                padding: 5px;
+            }
+            .app {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .app header {
+                flex: 0 0 60px;
+            }
+
+            .content {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+            }
+
+            .forms {
+                display: flex;
+                flex: 1;
+                flex-direction: row;
+            }
+            .notifications {
+                background-color: #303030;
+                color: #fff;
+                flex: 0 0 20px;
+            }
+            .current-time: {
+                border: solid blue 2px;
+                color: #ff0000;
+            }
+            
+        </style>
+    </head>
+
+    <body>
+        <div class="app">
+            <header>
+                <div class="notifications">
+                    <p>Current Server Time <span class="current-time"></span></p>
+                </div>
+            </header>
+            <section class="content">
+                <div class="md-content">
+# Immutable
+
+This page exposes a forward-only api.
+
+### Scenario
+
+Urls are minted with the `organization` revision.
+
+State changes to the app cause an update to the revision of the organization. 
+
+### Caching 
+
+* **Expiration** caching is set to `max-age={oneyear}`
+* **Validation** caching is not needed (eg `etag`)
+
+### Side effects
+
+* Server caching is dead simple
+* Clients can move forward and backward through revisions of the app
+* Clients are in control of upgrading when notified of state changes
+
+                </div>
+                <button type="button" class="details-toggle btn btn-default">Toggle Details</button>
+                <div class="md-target"></div>
+
+                <form class="update bg-info">
+                    <fieldset>
+                        <p>The current revision is <span class="current-revision"></span></p>
+                        <p>You are at revision <span class="stale-revision"></span></p>
+                        <button type="submit" class="btn btn-success" disabled="disabled">Update Revision</button>
+                    </fieldset>
+                </form>
+                <div class="forms">
+                    <form class="groups-form" action="/assets-catalog" method="PATCH">
+                        <legend>Update groups</legend>
+                        <fieldset>
+                            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
+                            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
+                            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+                        </fieldset>
+                        <fieldset>
+                            <label><input type="checkbox" name="group" class="group-value" value="a"/>Group A</label>
+                            <label><input type="checkbox" name="group" class="group-value" value="b"/>Group B</label>
+                            <label><input type="checkbox" name="group" class="group-value" value="c"/>Group C</label>
+                        </fieldset>
+                        <button type="submit" class="btn btn-primary">Apply Groups To Asset</button>
+                    </form>
+                    <form class="names-form" action="/assets-catalog" method="PATCH">
+                        <legend>Update Names</legend>
+                        <fieldset>
+                            <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
+                            <label><input type="radio" name="asset-id" value="2"/>Asset 2</label>
+                            <label><input type="radio" name="asset-id" value="3"/>Asset 3</label>
+                        </fieldset>
+
+                        <label>New Name</label>
+                        <input type="text" name="name" class="name-value"/>
+                        <button type="submit" class="btn btn-primary">Rename Asset</button>
+                    </form>
+                </div>
+                <section>
+                    <article class="asset-1">
+                        <h1>Asset A</h1>
+                        <dl class="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd class="name"></dd>
+                            <dt>Groups</dt>
+                            <dd class="groups"></dd>
+                        </dl>
+                    </article>
+                    <article class="asset-2">
+                        <h1>Asset B</h1>
+                        <dl class="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd class="name"></dd>
+                            <dt>Groups</dt>
+                            <dd class="groups"></dd>
+                        </dl>
+                    </article>
+                    <article class="asset-3">
+                        <h1>Asset C</h1>
+                        <dl class="dl-horizontal">
+                            <dt>Name</dt>
+                            <dd class="name"></dd>
+                            <dt>Groups</dt>
+                            <dd class="groups"></dd>
+                        </dl>
+                    </article>
+                </section>
+            </div>
+        </section>
+        
+        <script>
+            var app = App.start()
+            
+        </script>
+    </body>
+</html>

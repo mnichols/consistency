@@ -1,9 +1,37 @@
 var App = (function(){
 
     var socket
-        ,API_ENDPOINT = 'http://localhost:8000/api/'
+        ,API_ENDPOINT = 'http://localhost:8000/api'
         ,NOTIFICATIONS_ENDPOINT = 'http://localhost:8001/'
+        ,revisions = []
     ;
+
+    function seedRevisions() {
+        //this should come from server
+        revisions = [
+            { revision: 1 }
+        ]
+    }
+
+    function toggleDetails(e) {
+        var details = document.querySelector('.md-target')
+        details.classList.toggle('show')
+        details.classList.toggle('hidden')
+    }
+    //notification handlers
+    function handleRevisionChange(e) {
+        var client = revisions[0]
+        if(e) {
+            revisions.unshift(e)
+        }
+        e = e || client
+        var form = document.querySelector('form.update')
+        form.querySelector('.current-revision').innerHTML = e.revision
+        form.querySelector('.stale-revision').innerHTML = client.revision
+        if(client.revision === e.revision) {
+            return form.querySelector('button').setAttribute('disabled','')
+        }
+    }
 
     function url(path) {
         return API_ENDPOINT + path
@@ -35,8 +63,8 @@ var App = (function(){
             assignAssetValue(ass)
         }
     }
-    function loadAssets() {
-        return httpinvoke(url('/assets-catalog'),'GET',
+    function loadAssets(revision) {
+        return httpinvoke(url('/org/' + revision + '/assets-catalog'),'GET',
             function(err,body,statusCode){
                 var data = JSON.parse(body)
                 return assignValues(data.assets)
@@ -49,6 +77,7 @@ var App = (function(){
             var time = document.querySelector('.notifications .current-time')
             time.innerHTML = e.message
         })
+        socket.on('revisionChanged',handleRevisionChange)
 
     }
 
@@ -56,9 +85,15 @@ var App = (function(){
     function bindForms() {
         var groupsForm = document.querySelector('.groups-form')
         var namesForm = document.querySelector('.names-form')
+        var updateForm = document.querySelector('.update')
+        var detailsToggler = document.querySelector('.details-toggle')
         groupsForm.addEventListener('submit',patchGroups)
         namesForm.addEventListener('submit',patchNames)
+        updateForm.addEventListener('submit',reload)
+        detailsToggler.addEventListener('click',toggleDetails)
     }
+
+    //form handlers
     function patchGroups(e){
         var form = this
         e.preventDefault()
@@ -78,6 +113,12 @@ var App = (function(){
         })
     }
 
+    function reload(e) {
+        e.preventDefault()
+        var lastKnown = revisions[0]
+        return loadAssets(lastKnown.revision)
+    }
+
     function compileMarkdown(){
         var content = document.querySelector('.md-content')
         if(!content) {
@@ -89,9 +130,11 @@ var App = (function(){
 
     function start(){
         console.log('starting app')
+        seedRevisions()
+        handleRevisionChange()
         ping()
         connectToNotifications()
-        loadAssets()
+        loadAssets(revisions[0].revision)
         bindForms()
         compileMarkdown()
     }
@@ -99,6 +142,7 @@ var App = (function(){
 
     return {
         start: start
+        ,toggleDetails: toggleDetails
     }
 })()
 
