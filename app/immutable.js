@@ -2,17 +2,11 @@ var App = (function(){
 
     var socket
         ,API_ENDPOINT = 'http://localhost:8000/api'
+        ,IMMUTABLE_ENDPOINT = API_ENDPOINT + '/immutable'
         ,NOTIFICATIONS_ENDPOINT = 'http://localhost:8001/'
         ,revisions = []
+        ,clientRevision
     ;
-
-    function seedRevisions() {
-        //this should come from server
-        revisions = [
-            { revision: 1 }
-        ]
-    }
-
     function toggleDetails(e) {
         var details = document.querySelector('.md-target')
         details.classList.toggle('show')
@@ -20,27 +14,42 @@ var App = (function(){
     }
     //notification handlers
     function handleRevisionChange(e) {
-        var client = revisions[0]
+        var client = getClientRevision()
+        var form = document.querySelector('form.update')
+            ,button = form.querySelector('button')
         if(e) {
+            console.log('NOTIFICATION','revisionChanged',e)
             revisions.unshift(e)
         }
         e = e || client
-        var form = document.querySelector('form.update')
         form.querySelector('.current-revision').innerHTML = e.revision
         form.querySelector('.stale-revision').innerHTML = client.revision
+
         if(client.revision === e.revision) {
-            return form.querySelector('button').setAttribute('disabled','')
+            form.classList.remove('bg-primary')
+            form.classList.add('bg-info')
+            return button.setAttribute('disabled','')
+        } else {
+            form.classList.add('bg-primary')
+            form.classList.remove('bg-info')
+            return button.removeAttribute('disabled')
         }
+
     }
 
-    function url(path) {
-        return API_ENDPOINT + path
+    function getClientRevision() {
+        return clientRevision || revisions[0]
+    }
+
+    function url(path,endpoint,revision) {
+        endpoint = endpoint || IMMUTABLE_ENDPOINT
+        return endpoint + path
     }
     function noop(){}
 
     function ping(cb) {
         cb = (cb || noop)
-        httpinvoke(url('/ping'),'GET',{
+        httpinvoke(url('/ping',API_ENDPOINT),'GET',{
         },function(err,body,statusCode,headers){
             if(err) {
                 console.error(err)
@@ -63,7 +72,18 @@ var App = (function(){
             assignAssetValue(ass)
         }
     }
+    function loadRevisions(cb){
+        return httpinvoke(url('/org/revisions'),'GET',
+                function(err, body, statusCode) {
+                    var data = JSON.parse(body)
+                    revisions = data.revisions
+                    if(cb) {
+                        return cb(err)
+                    }
+                })
+    }
     function loadAssets(revision) {
+
         return httpinvoke(url('/org/' + revision + '/assets-catalog'),'GET',
             function(err,body,statusCode){
                 var data = JSON.parse(body)
@@ -96,18 +116,27 @@ var App = (function(){
     //form handlers
     function patchGroups(e){
         var form = this
+            ,rev = getClientRevision()
+        ;
+
         e.preventDefault()
-        httpinvoke(url('/assets-catalog'),'PATCH',{
-            input: new FormData(this)
+        var data = new FormData(this)
+        httpinvoke(url('/org/' + rev.revision + '/assets-catalog'),'PATCH',{
+            input: data
+            ,inputType: "formdata"
         },function(err) {
             form.reset()
         })
     }
     function patchNames(e) {
         var form = this
+            ,rev = getClientRevision()
         e.preventDefault()
-        httpinvoke(url('/assets-catalog'),'PATCH',{
-            input: new FormData(this)
+        var data = new FormData(this)
+        console.log('data',data)
+        httpinvoke(url('/org/' + rev.revision + '/assets-catalog'),'PATCH',{
+            input: data
+            ,inputType: "formdata"
         },function(err) {
             form.reset()
         })
@@ -115,8 +144,9 @@ var App = (function(){
 
     function reload(e) {
         e.preventDefault()
-        var lastKnown = revisions[0]
-        return loadAssets(lastKnown.revision)
+        var lastKnown = getClientRevision()
+        loadAssets(lastKnown.revision)
+        handleRevisionChange(lastKnown)
     }
 
     function compileMarkdown(){
@@ -130,13 +160,17 @@ var App = (function(){
 
     function start(){
         console.log('starting app')
-        seedRevisions()
-        handleRevisionChange()
         ping()
         connectToNotifications()
-        loadAssets(revisions[0].revision)
         bindForms()
         compileMarkdown()
+        loadRevisions(function(err){
+            if(err) {
+                console.error(err)
+            }
+            handleRevisionChange(getClientRevision())
+            loadAssets(getClientRevision().revision)
+        })
     }
 
 

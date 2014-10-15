@@ -112,11 +112,11 @@ State changes to the app cause an update to the revision of the organization.
                     <fieldset>
                         <p>The current revision is <span class="current-revision"></span></p>
                         <p>You are at revision <span class="stale-revision"></span></p>
-                        <button type="submit" class="btn btn-success" disabled="disabled">Update Revision</button>
+                        <button type="submit" class="btn btn-success">Update Revision</button>
                     </fieldset>
                 </form>
                 <div class="forms">
-                    <form class="groups-form" action="/assets-catalog" method="PATCH">
+                    <form class="groups-form" method="PATCH">
                         <legend>Update groups</legend>
                         <fieldset>
                             <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
@@ -130,7 +130,7 @@ State changes to the app cause an update to the revision of the organization.
                         </fieldset>
                         <button type="submit" class="btn btn-primary">Apply Groups To Asset</button>
                     </form>
-                    <form class="names-form" action="/assets-catalog" method="PATCH">
+                    <form class="names-form" method="PATCH">
                         <legend>Update Names</legend>
                         <fieldset>
                             <label><input type="radio" name="asset-id" value="1"/>Asset 1</label>
@@ -145,7 +145,7 @@ State changes to the app cause an update to the revision of the organization.
                 </div>
                 <section>
                     <article class="asset-1">
-                        <h1>Asset A</h1>
+                        <h1>Asset 1</h1>
                         <dl class="dl-horizontal">
                             <dt>Name</dt>
                             <dd class="name"></dd>
@@ -154,7 +154,7 @@ State changes to the app cause an update to the revision of the organization.
                         </dl>
                     </article>
                     <article class="asset-2">
-                        <h1>Asset B</h1>
+                        <h1>Asset 2</h1>
                         <dl class="dl-horizontal">
                             <dt>Name</dt>
                             <dd class="name"></dd>
@@ -163,7 +163,7 @@ State changes to the app cause an update to the revision of the organization.
                         </dl>
                     </article>
                     <article class="asset-3">
-                        <h1>Asset C</h1>
+                        <h1>Asset 3</h1>
                         <dl class="dl-horizontal">
                             <dt>Name</dt>
                             <dd class="name"></dd>
