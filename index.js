@@ -6,8 +6,25 @@ var Hapi = require('hapi')
 var server = new Hapi.Server('localhost', PORT)
     ,notificationsServer = new Hapi.Server('localhost',NOTIFICATIONS_PORT)
     ,io = require('socket.io')(notificationsServer.listener)
-    ,notifier
+    ,notifier = new Notifier()
 
+function Notifier(socket) {
+    if(socket){
+        this.wire(socket)
+    }
+}
+Notifier.prototype.wire = function(socket){
+    this.socket = socket
+    return this
+}
+Notifier.prototype.emit = function(e, data) {
+    if(!this.socket) {
+        console.log('notifications not connected',e,data)
+        return this
+    }
+    this.socket.emit(e,data)
+    return this
+}
 //common routes
 
 server.route({
@@ -20,16 +37,7 @@ server.route({
     }
 })
 
-var ioHandler = function(socket) {
-    notifier = socket
-    setInterval(function(){
-        socket.emit('currentTime',{
-            message: new Date().toString()
-        })
-
-    },1000)
-}
-io.on('connection',ioHandler)
+io.on('connection',notifier.wire.bind(notifier))
 
 //apps
 require('./immutable')(server,notifier,'')
@@ -37,6 +45,12 @@ require('./immutable')(server,notifier,'')
 // Start the server
 server.start(function(){
     notificationsServer.start()
+    setInterval(function(){
+        notifier.emit('currentTime',{
+            message: new Date().toString()
+        })
+
+    },1000)
 
 })
 

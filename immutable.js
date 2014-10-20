@@ -10,52 +10,8 @@ var Halibut =  hatchery.spawn({
 
 
 module.exports = function(server, notifier,  namespace) {
-
-    //models
-    var Organization = {
-        name: 'JEDRAACK'
-        ,revision: '1'
-        ,revisions: ['1']
-    }
-
-    var Assets = {}
-    for(var i = 1; i < 11; i++) {
-        Assets[i + ''] = {
-            id: i
-            ,lastSeen: new Date().toUTCString()
-            ,name: 'asset numero ' + i
-            ,description: '[' + i + '] is described thusly - ' + i
-        }
-    }
-    Object.defineProperty(Assets,'findByUrl',{
-        value: function(request, assetUrl){
-            for(var k in Assets) {
-                var ass = Assets[k]
-                if(hosted(request,'/assets/' + ass.id) === assetUrl) {
-                    return ass
-                }
-            }
-            throw new Error('cannot locate ' + assetUrl)
-        }
-        ,enumerable: false
-    })
-
-    function createCatalog(request){
-        var cat = {
-            catalog: {}
-        }
-        Object.keys(Assets).reduce(function(it,key){
-            var ass = Assets[key]
-            var tuple = {
-                name: ass.name
-                ,description: ass.description
-            }
-            var assetUrl = hosted(request,'/assets/' + ass.id)
-            it[assetUrl] = tuple
-            return it
-        },cat.catalog)
-        return cat
-    }
+    //database
+    var org = new Organization(1)
 
     function hosted(request,pathname) {
         var host = request.headers['host']
@@ -70,19 +26,131 @@ module.exports = function(server, notifier,  namespace) {
     }
 
 
+    //models
+    function Organization(rev,from){
+        this.name = 'JEDRAACK'
+        this.revision = rev + ''
+        this.revisions = from ? from.revisions.concat(this) : [this]
+        this.assets = new Assets(this,from)
+    }
+    Organization.prototype.hosted = function(request){
+        var pathname =  '/organizations/' + this.revision
+        if(request) {
+            return hosted(request,pathname)
+        }
+        return pathname
+    }
+    Organization.prototype.revise = function(){
+        var current = this.current()
+        var newHigh = new Organization(current.revision + 1,this.revisions)
+
+        var orgs = this.revisions.map(function(org){
+            return parseInt(org.revision,10)
+        })
+        var max = Math.max(orgs)
+        var high = max + 1
+    }
+    Organization.prototype.revision = function(rev) {
+        return this.revisions.filter(function(org){
+            return org.revision = rev
+        })[0]
+    }
+    Organization.prototype.current = function(){
+        var orgs = this.revisions.map(function(org){
+            return parseInt(org.revision,10)
+        })
+        var max = Math.max(orgs)
+        return this.revision(max)
+    }
+    Object.defineProperty(Organizations,'revise',{
+        value: function(){
+            var keys = Object.keys(Organizations).map(function(key){ return parseInt(key,10)})
+            var max = Math.max(keys)
+            var high = max + 1
+            var newOrg = Organizations(high,Organizations[max + ''])
+            Organizations[high] = newOrg
+            notifier.emit('organizationRevised',newOrg)
+            return newOrg
+        }
+        ,enumerable: false
+    })
+
+    function Assets(organization,from) {
+        this.org = organization
+        this.assets = (from && from.assets || {})
+        for(var i = 1; i < 1001; i++) {
+            this.assets[i + ''] = new Asset(i)
+        }
+    }
+    Assets.prototype.findByUrl = function(request, assetUrl) {
+        for(var k in this.assets) {
+            var ass = this.assets[k]
+            if(ass.hosted(request) === assetUrl) {
+                return ass
+            }
+        }
+        throw new Error('cannot locate ' + assetUrl)
+
+    }
+    Assets.prototype.hosted = function(request) {
+        var pathname = this.org.hosted(request) + '/assets'
+        if(request) {
+            return hosted(request,pathname)
+        }
+        return pathname
+    }
+    Assets.prototype.createCatalog = function(request){
+        var cat = {
+            catalog: {}
+        }
+        Object.keys(this.assets).reduce(function(it,key){
+            var ass = this.assets[key]
+            var tuple = {
+                name: ass.name
+                ,description: ass.description
+            }
+            var assetUrl = ass.hosted(request)
+            it[assetUrl] = tuple
+            return it
+        },cat.catalog)
+        return cat
+    }
+
+    function Asset(id, assets) {
+        this.id = id + ''
+        this.name = 'asset numero ' + i
+        this.description = '[' + i + '] is described'
+        this.lastSeen = new Date().toUTCString()
+        this.assets = assets
+    }
+    Asset.prototype.hosted = function(request){
+        var pathname  = this.assets.hosted(request) + '/' + this.id
+        if(request) {
+            return hosted(request,pathname)
+        }
+        return pathname
+    }
+
+
+    Organizations['1'] = new Organization(1)
+
+
+
     //routes
     server.route({
-        path: namespace + '/organizations/{id}'
+        path: namespace + '/organizations/{revision}'
         ,method: 'GET'
         ,handler: function(request, reply) {
+            var org = Organizations[request.params.revision]
             var hald = Halibut.parse({
-                self: hosted(request,'/organizations/' + request.params.id)
+                self: hosted(request,'/organizations/' + org.revision)
                 ,body: {
                     _links: {
-                        revisions: { href: '/revisions'}
+                        revisions: { href: hosted(request,'/revisions')}
+                        ,assets: { href: hosted(request,'/assets')}
                     }
-                    ,name: Organization.name
-                    ,revision: Organization.revision
+                    ,name: org.name
+                    ,revision: org.revision
                 }
             })
             return reply(hald.serialize())
@@ -104,7 +172,7 @@ module.exports = function(server, notifier,  namespace) {
     })
 
     server.route({
-        path: namespace + '/assets'
+        path: namespace + '/organizations/{revision}/assets'
         ,method: 'GET'
         ,handler: function(request, reply) {
             var hald = Halibut.parse({
@@ -116,7 +184,7 @@ module.exports = function(server, notifier,  namespace) {
     })
 
     server.route({
-        path: namespace + '/assets'
+        path: namespace + '/organizations/{revision}/assets'
         ,method: 'PATCH'
         ,handler: function(request,reply) {
             var data = (request.payload || {}).catalog || {}
@@ -133,7 +201,7 @@ module.exports = function(server, notifier,  namespace) {
     })
 
     server.route({
-        path: namespace + '/assets/{id}'
+        path: namespace + '/organizations/{revision}/assets/{id}'
         ,method: 'GET'
         ,handler: function(request,reply) {
             var ass = Assets[request.params.id]
