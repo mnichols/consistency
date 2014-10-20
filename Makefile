@@ -13,5 +13,9 @@ stop: node_modules
 logs:
 	./node_modules/.bin/pm2 logs
 
+flush:
+	./node_modules/.bin/pm2 flush
+
+
 .PHONY: demo serve stop logs
 

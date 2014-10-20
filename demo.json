@@ -2,7 +2,7 @@
     "apps": [{
         "name":"api-server"
         ,"script":"./index.js"
-        ,"watch":["index.js"]
+        ,"watch":["index.js","immutable.js"]
         ,"ignoreWatch":[
             "node_modules"
             ,"demo"
