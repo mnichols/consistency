@@ -33,7 +33,11 @@ var Notification = {
 ```
 
 The client knows something happened but has no idea which resources need to be updated to reflect the 'truth'.
-The only option the client has is to force the user to refresh the page or component with _all_ resources with
+
+If the api supports versioning and consequently exposes immutable entities, the client may place the burden of updating
+the data on the _user_, allowing them to view stale data and/or disable forms as necessary to prevent concurrency exceptions.
+
+However, if the api _doesn't_ support revisioning, the only option the client has is to force the user to refresh the page or component with _all_ resources with
 request header:
 
     Cache-Control: no-cache

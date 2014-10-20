@@ -1,7 +1,7 @@
 consistency
 ===========
 
-* [Caching](stages.md)
+* [Caching](caching.md)
 * [Notifications](notifications.md)
 
 ### Prerequisites
@@ -11,4 +11,4 @@ consistency
 
 ###  Running
 
-`vagrant up` => visit at `http://localhost:8000/composed.html`
+`vagrant up` => visit at `http://localhost:8000`
