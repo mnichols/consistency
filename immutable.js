@@ -1,5 +1,6 @@
 var url = require('url')
     ,hatchery = require('halibut')
+    ,Hapi = require('hapi')
 
 var Halibut =  hatchery.spawn({
     request: function(){
@@ -30,8 +31,16 @@ module.exports = function(server, notifier,  namespace) {
     function Organization(rev,from){
         this.name = 'JEDRAACK'
         this.revision = rev + ''
-        this.revisions = from ? from.revisions.unshift(this) : [this]
-        this.assets = new Assets(this,from && from.assets)
+        this.revisions = [this]
+        if(from) {
+            from.revisions.unshift(this)
+            from.readOnly()
+            this.revisions = from
+            this.assets = new Assets(this,from.assets)
+            //copy data from prev into these assets
+        } else {
+            this.assets = new Assets(this)
+        }
         this.isSealed = false
     }
     Organization.prototype.hosted = function(request){
@@ -47,16 +56,18 @@ module.exports = function(server, notifier,  namespace) {
         //* seal previous rev from state changes
         var current = this.current()
         var newHigh = new Organization(current.revision + 1,current)
-        this.revisions.forEach(function(it){
-            // it.revisions.unshift(newHigh)
-        })
-        notifier.emit('organizationRevised',newHigh.revision)
+        console.log('bump org revision to ',current.revision + 1)
+        notifier.emit('organizationRevised',newHigh)
         return newHigh
     }
     Organization.prototype.at = function(rev) {
-        return this.revisions.filter(function(org){
+        var match =  this.revisions.filter(function(org){
             return org.revision = rev
-        })[0]
+        })
+        if(!match) {
+            throw new Error('no org at ' + rev)
+        }
+        return match[0]
     }
     Organization.prototype.current = function(){
         var orgs = this.revisions.map(function(org){
@@ -66,6 +77,7 @@ module.exports = function(server, notifier,  namespace) {
         return this.at(max)
     }
     Organization.prototype.readOnly = function(){
+        console.log('marking revision',this.revision,'readonly')
         this.isSealed = true
         this.assets.readOnly()
         return this
@@ -73,12 +85,22 @@ module.exports = function(server, notifier,  namespace) {
 
     function Assets(organization,assets) {
         this.org = organization
-        this.assets = assets || {}
-        if(!assets) {
-            for(var i = 1; i < 1001; i++) {
+        if(assets) {
+            this.assets = assets.clone(this)
+        } else {
+            this.assets = {}
+            for(var i = 1; i < 11; i++) {
                 this.assets[i + ''] = new Asset(i,this)
             }
         }
+    }
+
+    Assets.prototype.clone = function(onto){
+        var items = {}
+        for(var k in this.assets) {
+            items[k] = this.assets[k].clone(onto)
+        }
+        return items
     }
     Assets.prototype.readOnly = function(){
         for(var k in this.assets) {
@@ -88,6 +110,10 @@ module.exports = function(server, notifier,  namespace) {
     Assets.prototype.findByUrl = function(request, assetUrl) {
         for(var k in this.assets) {
             var ass = this.assets[k]
+            if(!ass.hosted) {
+                console.log('no hosted',ass)
+                throw new Error('No hosted on ' + JSON.stringify(ass))
+            }
             if(ass.hosted(request) === assetUrl) {
                 return ass
             }
@@ -129,6 +155,13 @@ module.exports = function(server, notifier,  namespace) {
         this.assets = assets
         this.isSealed = false
     }
+    Asset.prototype.clone = function(assets){
+        var copy = new Asset(this.id,assets || this.assets)
+        copy.name = this.name
+        copy.description =this.description
+        copy.lastSeen = this.lastSeen
+        return copy
+    }
     Asset.prototype.hosted = function(request){
         return  this.assets.hosted(request) + '/' + this.id
     }
@@ -151,7 +184,6 @@ module.exports = function(server, notifier,  namespace) {
         this.description = description
     }
     Asset.prototype.readOnly = function(){
-
         this.isSealed = true
     }
 
@@ -212,16 +244,26 @@ module.exports = function(server, notifier,  namespace) {
         ,method: 'PATCH'
         ,handler: function(request,reply) {
             var org = organization.at(request.params.revision)
+            console.log('PATCHING org',org.revision,org)
             var data = (request.payload || {}).catalog || {}
+            var error
             Object.keys(data).forEach(function(key){
                 var tuple = data[key]
                 console.log('finding',key)
                 var ass = org.assets.findByUrl(request,key)
-                console.log('PATCHING asset',ass.id,'with url',key,'using tuple',tuple)
-                ass.rename(tuple.name)
-                ass.describe(tuple.description)
+                console.log('PATCHING asset',ass.id,ass.isSealed ? '[SEALED]':'OK','with url',key,'using tuple',tuple)
+                try {
+                    ass.rename(tuple.name)
+                    ass.describe(tuple.description)
+                } catch(err) {
+                    error = Hapi.error.badRequest(err.message)
+                    console.error(err,err.stack)
+                    throw err
+                }
             })
-            org.revise()
+            if(!error) {
+                org.revise()
+            }
             return reply({}).code(204)
         }
     })

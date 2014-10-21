@@ -19,7 +19,7 @@ Notifier.prototype.wire = function(socket){
 }
 Notifier.prototype.emit = function(e, data) {
     if(!this.socket) {
-        console.log('notifications not connected',e,data)
+        //console.log('notifications not connected',e,data)
         return this
     }
     this.socket.emit(e,data)

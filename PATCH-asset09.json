@@ -1,0 +1,8 @@
+{
+    "catalog": {
+        "http://localhost:8000/organizations/1/assets/9": {
+            "name": "HOO"
+            ,"description":"HAW"
+        }
+    }
+}
